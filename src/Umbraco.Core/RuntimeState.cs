@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Web;
 using Semver;
@@ -210,12 +211,19 @@ namespace Umbraco.Core
                 // can connect to the database but cannot check the upgrade state... oops
                 logger.Warn<RuntimeState>(e, "Could not check the upgrade state.");
 
-                if (RuntimeOptions.InstallEmptyDatabase && databaseFactory.IsDatabaseEmpty)
+                if (RuntimeOptions.InstallEmptyDatabase)
                 {
-                    // ok to install on an empty database
-                    Level = RuntimeLevel.Install;
-                    Reason = RuntimeLevelReason.InstallEmptyDatabase;
-                    return;
+                    var isDatabaseEmpty = false;
+                    using (var database = databaseFactory.CreateDatabase())
+                        isDatabaseEmpty = databaseFactory.SqlContext.SqlSyntax.GetTablesInSchema(database).Any() == false;
+
+                    if (isDatabaseEmpty)
+                    {
+                        // ok to install on an empty database
+                        Level = RuntimeLevel.Install;
+                        Reason = RuntimeLevelReason.InstallEmptyDatabase;
+                        return;
+                    }
                 }
 
                 // else it is bad enough that we want to throw

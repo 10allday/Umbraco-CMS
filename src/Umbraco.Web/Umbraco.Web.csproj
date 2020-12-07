@@ -138,8 +138,6 @@
     <Compile Include="Compose\NestedContentPropertyComponent.cs" />
     <Compile Include="Compose\NotificationsComposer.cs" />
     <Compile Include="Compose\PublicAccessComposer.cs" />
-    <Compile Include="Compose\UnattendedInstallComponent.cs" />
-    <Compile Include="Compose\UnattendedInstallComposer.cs" />
     <Compile Include="Composing\CompositionExtensions\Installer.cs" />
     <Compile Include="Composing\LightInject\LightInjectContainer.cs" />
     <Compile Include="Compose\BackOfficeUserAuditEventsComponent.cs" />

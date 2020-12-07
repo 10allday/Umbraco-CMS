@@ -2,8 +2,10 @@
 using System.Web;
 using Umbraco.Core;
 using Umbraco.Core.Cache;
+using Umbraco.Core.Compose;
 using Umbraco.Core.Composing;
 using Umbraco.Core.Configuration;
+using Umbraco.Core.Events;
 using Umbraco.Core.Logging;
 using Umbraco.Core.Runtime;
 using Umbraco.Web.Logging;
@@ -33,6 +35,8 @@ namespace Umbraco.Web.Runtime
             : base(logger, mainDom)
         {
             _umbracoApplication = umbracoApplication;
+
+            UnattendedInstallComponent.InstallCompleted += InstallCompleted;
         }
 
         /// <inheritdoc/>
@@ -61,6 +65,19 @@ namespace Umbraco.Web.Runtime
             factory.EnablePerWebRequestScope();
 
             return factory;
+        }
+
+        public override void Terminate()
+        {
+            base.Terminate();
+
+            UnattendedInstallComponent.InstallCompleted -= InstallCompleted;
+        }
+
+        private void InstallCompleted(object sender, UnattendedInstallEventArgs e)
+        {
+            if (e.Success)
+                _umbracoApplication.Application["AppPoolRequiresRestart"] = true;
         }
 
         #region Getters

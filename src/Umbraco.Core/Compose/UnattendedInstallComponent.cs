@@ -1,26 +1,26 @@
 ﻿using System;
-using Umbraco.Core;
 using Umbraco.Core.Composing;
+using Umbraco.Core.Events;
+using Umbraco.Core.Exceptions;
 using Umbraco.Core.Logging;
 using Umbraco.Core.Migrations.Install;
-using Umbraco.Web.Install;
 
-namespace Umbraco.Web.Compose
+namespace Umbraco.Core.Compose
 {
     public class UnattendedInstallComponent : IComponent
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRuntimeState _runtimeState;
         private readonly ILogger _logger;
         private readonly DatabaseBuilder _databaseBuilder;
 
-        public UnattendedInstallComponent(IHttpContextAccessor httpContextAccessor, IRuntimeState runtimeState, ILogger logger, DatabaseBuilder databaseBuilder)
+        public UnattendedInstallComponent(IRuntimeState runtimeState, ILogger logger, DatabaseBuilder databaseBuilder)
         {
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
             _runtimeState = runtimeState ?? throw new ArgumentNullException(nameof(runtimeState));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _databaseBuilder = databaseBuilder ?? throw new ArgumentNullException(nameof(databaseBuilder));
         }
+
+        public static event EventHandler<UnattendedInstallEventArgs> InstallCompleted;
 
         public void Initialize()
         {
@@ -31,12 +31,11 @@ namespace Umbraco.Web.Compose
             var result = _databaseBuilder.CreateSchemaAndData();
             _logger.Info<UnattendedInstallComponent>("Umbraco Installed.");
 
-            if (result.Success == false)
-                throw new InstallException("An error occurred while running the unattended installation.\n" + result.Message);
+            if(InstallCompleted != null)
+                InstallCompleted.Invoke(this, new UnattendedInstallEventArgs(result.Success, result.Message));
 
-            // mark application to be restarted
-            if (_httpContextAccessor.HttpContext != null)
-                _httpContextAccessor.HttpContext.Application["UmbracoRestartRequired"] = true;
+            if (result.Success == false)
+                throw new UnattendedInstallException(result.Message);
         }
 
         public void Terminate()

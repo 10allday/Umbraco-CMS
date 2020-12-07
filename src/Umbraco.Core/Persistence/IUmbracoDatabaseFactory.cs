@@ -43,12 +43,6 @@ namespace Umbraco.Core.Persistence
         bool CanConnect { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the database is empty, it should already be determined if its possible to
-        /// connect to the database (see <see cref="CanConnect"/>) otherwise an exception might be thrown.
-        /// </summary>
-        bool IsDatabaseEmpty { get; }
-
-        /// <summary>
         /// Configures the database factory.
         /// </summary>
         void Configure(string connectionString, string providerName);

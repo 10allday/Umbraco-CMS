@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Configuration;
 using System.Data.Common;
-using System.Linq;
 using System.Threading;
 using NPoco;
 using NPoco.FluentMappings;
@@ -130,18 +129,6 @@ namespace Umbraco.Core.Persistence
             // actually tries to connect to the database (regardless of configured/initialized)
             !_connectionString.IsNullOrWhiteSpace() && !_providerName.IsNullOrWhiteSpace() &&
             DbConnectionExtensions.IsConnectionAvailable(_connectionString, _providerName);
-
-        /// <inheritdoc />
-        public bool IsDatabaseEmpty
-        {
-            get
-            {
-                using (var database = CreateDatabase())
-                {
-                    return SqlContext.SqlSyntax.GetTablesInSchema(database).Any() == false;
-                }
-            }
-        }
 
         private void UpdateSqlServerDatabaseType()
         {
